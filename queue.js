@@ -12,7 +12,7 @@ function queue(data) {
 
   if (existDataIndex !== -1) {
     const timePassed = Date.now() - queues[existDataIndex].date;
-    if (timePassed > 10000) {
+    if (timePassed > 30000) {
       queues.splice(existDataIndex, 1);
       return false;
     } else {

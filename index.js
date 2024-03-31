@@ -6,12 +6,19 @@ const FCA = require("./Controllers/fbController.js");
 
 login(
   { appState: JSON.parse(fs.readFileSync("./config/appstate.json", "utf8")) },
+
   (err, api) => {
+
     if (err) return console.error(err);
+
     api.setOptions({ listenEvents: true, logLevel: "silent" });
+
     var listenEmitter = api.listen(async (err, event) => {
+
       if (err) return console.error(err);
+
       switch (event.type) {
+
         case "message":
           const fbController = new FCA(api);
           
@@ -27,9 +34,19 @@ login(
             fbController.aleah(event);
           } else if (event.body.startsWith("kick")) {
             fbController.kick(event);
+          } else if(event.body.startsWith("/german")) {
+            fbController.german(event);
+          }else if(event.body.startsWith("/english")) {
+            fbController.english(event);
+          }  else if(event.body.startsWith("/lyrics")) {
+            fbController.lyrics(event);
+          } else if(event.body.startsWith("/github")) {
+            fbController.github(event);
           } else if (event.body == "test") {
             fbController.test(event);          
-          } 
+          } else if (event.body == "/meme") {
+            fbController.meme(event);          
+          }
 
           break;
         case "event":
@@ -37,5 +54,6 @@ login(
           break;
       }
     });
+
   }
 );

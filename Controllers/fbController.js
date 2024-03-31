@@ -2,6 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const AI = require("../models/AI.js");
 const Auth = require("../middleware/auth.js");
+const axios = require("axios");
+const { log } = require("console");
 
 class FCA{
   constructor(api) {
@@ -13,6 +15,7 @@ class FCA{
   }
 
   // ===
+
 
   async test(event) {
     if (this.auth.check(event.senderID)) {
@@ -112,6 +115,73 @@ class FCA{
 
         }
   }
+
+  async music(query) {
+  //  to be added
+  }
+
+  async german(event) {
+    const response = await axios.get(`https://api.popcat.xyz/translate?to=de&text=${event.body.substring(7)}`)
+    await this.api.sendMessage(response.data.translated, event.threadID, event.messageID);
+
+  }
+
+  async english(event) {
+    const response = await axios.get(`https://api.popcat.xyz/translate?to=en&text=${event.body.substring(8)}`)
+    await this.api.sendMessage(response.data.translated, event.threadID, event.messageID);
+
+  }
+
+  async lyrics(event) {
+    const response = await axios.get(`https://api.popcat.xyz/lyrics?song=${event.body.substring(7)}`)
+    await this.api.sendMessage(response.data.lyrics, event.threadID, event.messageID);
+
+  }
+
+  async meme(event) {
+    const {data: {image}} = await axios.get("https://api.popcat.xyz/meme")
+
+    const imgFile = path.resolve("./tmp/meme.png");
+
+    const response = await axios.get(image, { responseType: 'stream' });
+    const fileStream = fs.createWriteStream(imgFile);
+    response.data.pipe(fileStream);
+
+    await new Promise((resolve, reject) => {
+      fileStream.on('finish', resolve);
+      fileStream.on('error', reject);
+    });
+    await this.api.sendMessage({ body: '', attachment: fs.createReadStream(imgFile)  }, event.threadID, event.messageID);
+
+
+  }
+
+  async github(event) {
+    try {
+      const { data: { avatar, name, location, email, bio, public_repos, public_gists, followers, following } } = await axios.get(`https://api.popcat.xyz/github/${event.body.substring(8)}`);
+      const imgFile = path.resolve("./tmp/avatar.png");
+      
+      const response = await axios.get(avatar, { responseType: 'stream' });
+      const fileStream = fs.createWriteStream(imgFile);
+      response.data.pipe(fileStream);
+  
+      await new Promise((resolve, reject) => {
+        fileStream.on('finish', resolve);
+        fileStream.on('error', reject);
+      });
+  
+      const message = {
+        body: `Name: ${name} \nLocation: ${location} \nEmail: ${email} \nBIO: ${bio} \nREPO: ${public_repos} \nGIST: ${public_gists} \nFOLLOWERS: ${followers} \nFOLLOWING: ${following}`.trim(),
+        attachment: fs.createReadStream(imgFile)
+      };
+  
+      await this.api.sendMessage(message, event.threadID, event.messageID);
+      console.log('Image sent successfully!');
+    } catch (error) {
+      console.error('Error:', error);
+    }
+   }  
+
   // ===
   async help(event) {
     let help = `

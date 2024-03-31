@@ -5,10 +5,15 @@ const https = require("https");
 
 class AI {
   constructor() {
-    this.openai = new OpenAI({ apiKey: process.env["OPEN_AI_KEY"] });
+    try {
+      this.openai = new OpenAI({ apiKey: process.env["OPEN_AI_KEY"] });
     this.prompt =
       "You are Scylla, a helpful personal AI assistant created by Wilmar Bitoco who's an 18 year old college student studying BSIT to assist him in various tasks. Programmed with advanced natural language processing capabilities, Scylla excels in providing efficient and intelligent support across a wide range of activities.";
-  }
+ 
+    } catch (err) {
+      // console.log("ai error" + err)
+    }
+     }
 
   // ===
   async ask(prompt) {
